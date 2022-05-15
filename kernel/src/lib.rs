@@ -17,8 +17,13 @@
 
 use core::panic::PanicInfo;
 
+pub const UART_BASE_ADDR: usize = 0x1000_0000;
+
 #[no_mangle]
 pub extern "C" fn kinit() -> ! {
+    unsafe {
+        (UART_BASE_ADDR as *mut u8).write_volatile(b'H');
+    }
     loop {}
 }
 
