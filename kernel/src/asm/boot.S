@@ -1,4 +1,4 @@
-#
+# 
 # This file is part of goliath.
 # goliath is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -10,36 +10,25 @@
 # GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License
 # along with goliath. If not, see <https://www.gnu.org/licenses/>.
-#
+# 
 
-    .align 4
-    .equ UART_REG_TXFIFO, 0
-    .equ UART_BASE, 0x10013000
-
-    .section .text
-    .globl _start
-
+    .section .text.init
+    .global _start
+    .global __kernel_stack_start
+    .global kinit
 _start:
-    csrr t0, mhartid
-    bnez t0, halt
-
-    la a0, hello_msg
-
-    li t0, UART_BASE
-
-puts_loop:
-    lbu t1, (a0)
-    beqz t1, halt
-puts_wait:
-    lw t2, UART_REG_TXFIFO(t0)
-    bltz t2, puts_wait
-    sw t1, UART_REG_TXFIFO(t0)
-    add a0, a0, 1
-    j puts_loop
-
-halt:
-    j halt
-
-    .section .rodata
-hello_msg:
-    .string "Hello, world!\n"
+    la a0, __bss_start
+    la a1, __bss_end
+    bgeu a0, a1, 2f
+1:
+    sd zero, 0(a0)
+    addi a0, a0, 8
+    bltu a0, a1, 1b
+2:
+    la sp, __kernel_stack_start
+    li a0, 0x10000
+    csrr a1, mhartid
+    addi a1, a1, 1
+    mul a0, a0, a1
+    add sp, sp, a0
+    call kinit

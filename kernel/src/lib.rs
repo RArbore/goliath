@@ -18,7 +18,7 @@
 use core::panic::PanicInfo;
 
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn kinit() -> ! {
     loop {}
 }
 
