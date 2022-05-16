@@ -13,17 +13,21 @@
  */
 
 #![no_std]
-#![no_main]
 
-use core::arch::asm;
+//use core::arch::asm;
+//use riscv::register::*;
 use core::panic::PanicInfo;
-use riscv::register::*;
 
-static UART_BASE_ADDR: usize = 0x1000_0000;
-static HELLO_WORLD: &[u8] = b"Hello, World!";
+pub mod drivers;
+pub use drivers::*;
 
 #[no_mangle]
 unsafe extern "C" fn kinit() {
+    let hello_world: &[u8] = b"Hello, World!";
+    for &byte in hello_world {
+        ns16550a::uart_put_char(byte);
+    }
+    /*
     mstatus::set_mpp(mstatus::MPP::Supervisor);
 
     mepc::write(kmain as usize);
@@ -39,19 +43,12 @@ unsafe extern "C" fn kinit() {
     asm!("mv tp, a1");
 
     asm!("mret");
+    */
+    loop {}
 }
 
 #[no_mangle]
-unsafe extern "C" fn kmain() -> ! {
-    let ptr = UART_BASE_ADDR as *mut u8;
-    for &c in HELLO_WORLD.iter() {
-        loop {
-            if ptr.add(5).read_volatile() & (1 << 5) != 0 {
-                break;
-            }
-        }
-        ptr.write_volatile(c);
-    }
+extern "C" fn kmain() -> ! {
     loop {}
 }
 
