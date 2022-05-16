@@ -15,23 +15,42 @@
 #![no_std]
 #![no_main]
 
+use core::arch::asm;
 use core::panic::PanicInfo;
+use riscv::register::*;
 
 static UART_BASE_ADDR: usize = 0x1000_0000;
 static HELLO_WORLD: &[u8] = b"Hello, World!";
 
 #[no_mangle]
-pub extern "C" fn kinit() -> ! {
+unsafe extern "C" fn kinit() {
+    mstatus::set_mpp(mstatus::MPP::Supervisor);
+
+    mepc::write(kmain as usize);
+
+    asm!("csrw satp, zero");
+
+    asm!("li t0, 0xffff");
+    asm!("csrw medeleg, t0");
+    asm!("li t0, 0xffff");
+    asm!("csrw mideleg, t0");
+
+    asm!("csrr a1, mhartid");
+    asm!("mv tp, a1");
+
+    asm!("mret");
+}
+
+#[no_mangle]
+unsafe extern "C" fn kmain() -> ! {
     let ptr = UART_BASE_ADDR as *mut u8;
     for &c in HELLO_WORLD.iter() {
         loop {
-            if unsafe { ptr.add(5).read_volatile() } & (1 << 5) != 0 {
+            if ptr.add(5).read_volatile() & (1 << 5) != 0 {
                 break;
             }
         }
-        unsafe {
-            ptr.write_volatile(c);
-        }
+        ptr.write_volatile(c);
     }
     loop {}
 }

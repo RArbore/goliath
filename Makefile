@@ -13,7 +13,7 @@
     You should have received a copy of the GNU Lesser General Public License \
     along with vtrace. If not, see <https://www.gnu.org/licenses/>.
 
-run: build/kernel.bin
+run:
 	cargo build --release
 	riscv64-elf-gcc -march=rv64gc -static -fvisibility=hidden -nostartfiles -nostdlib -Tkernel/src/kernel.ld kernel/src/asm/boot.S -Ltarget/riscv64gc-unknown-none-elf/release/ -lkernel -o build/kernel.bin
 	qemu-system-riscv64 -machine virt -cpu rv64 -smp 4 -m 128M -bios none -nographic -kernel build/kernel.bin
