@@ -15,7 +15,6 @@
 #![no_std]
 #![no_main]
 
-use core::arch::asm;
 use core::panic::PanicInfo;
 use riscv::register::*;
 
@@ -25,41 +24,17 @@ pub mod drivers;
 pub mod spinlock;
 pub mod trap;
 
-extern "C" {
-    static kernelvec: usize;
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn kinit() {
-    mstatus::set_mpp(mstatus::MPP::Supervisor);
-    mepc::write(kmain as usize);
-
-    asm!("li t0, 0xffff");
-    asm!("csrw medeleg, t0");
-    asm!("li t0, 0xffff");
-    asm!("csrw mideleg, t0");
-
+    satp::write(0);
     pmpaddr0::write(0x3fffffffffffff);
     pmpcfg0::write(0xf);
-
-    let id = mhartid::read();
-    asm!("mv tp, {0}", in(reg) id);
-
-    mtvec::write(kernelvec, stvec::TrapMode::Direct);
-
-    mie::set_sext();
-    mie::set_ssoft();
-    mie::set_stimer();
-
-    drivers::clint::clint_set_future(1_000);
-
-    mstatus::set_mie();
-
-    asm!("mret");
 }
 
 #[no_mangle]
 extern "C" fn kmain() -> ! {
+    unsafe { (0x1000_0000 as *mut u8).write_volatile(b'C') };
+    drivers::clint::clint_set_future(10_000_000);
     loop {
         let uart = drivers::ns16550a::UART_DRIVER_HANDLE.lock();
         if let Some(byte) = uart.uart_get_byte() {

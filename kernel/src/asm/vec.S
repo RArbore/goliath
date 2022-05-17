@@ -14,9 +14,9 @@
 
     .option norvc
 
-    .global kernelvec
+    .global m_trap_vec
     .align 4
-kernelvec:
+m_trap_vec:
     addi sp, sp, -256
 
     sd ra, 0(sp)

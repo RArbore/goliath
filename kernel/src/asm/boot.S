@@ -36,14 +36,31 @@ bss_loop:
 bss_loop_end:
 
     la sp, __kernel_stack_end
-    li a0, 0x10000
-    csrr a1, mhartid
-    addi a1, a1, 1
-    mul a0, a0, a1
-    add sp, sp, a0
 
+    li t0, 0b11 << 11
+    csrw mstatus, t0
     csrw mie, zero
+    la t0, kinit
+    csrw mepc, t0
     
-    call kinit
+    la ra, after_kinit
+    mret
+
+after_kinit:	
+    li t0, (0b01 << 11) | (1 << 7) | (1 << 5)
+    csrw mstatus, t0
+
+    la t1, m_trap_vec
+    csrw mtvec, t1
+
+    la t2, kmain
+    csrw mepc, t2
+
+    li t3, 0x888
+    csrw mie, t3
+
+    csrr tp, mhartid
+
+    mret
 
     .end

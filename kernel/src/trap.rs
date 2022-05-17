@@ -15,5 +15,5 @@
 #[no_mangle]
 pub extern "C" fn m_trap() {
     unsafe { (0x1000_0000 as *mut u8).write_volatile(b'A') };
-    crate::drivers::clint::clint_set_future(1_000);
+    //crate::drivers::clint::clint_set_future(10_000_000);
 }
