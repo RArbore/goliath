@@ -25,6 +25,7 @@ _start:
     addi a0, a0, 8
     bltu a0, a1, 1b
 2:
+    la gp, __global_pointer
     la sp, __kernel_stack_start
     li a0, 0x10000
     csrr a1, mhartid

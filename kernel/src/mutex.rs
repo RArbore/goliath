@@ -13,6 +13,8 @@
  */
 
 use core::cell::UnsafeCell;
+use core::ops::Deref;
+use core::ops::DerefMut;
 use core::ops::Drop;
 use core::sync::atomic::{AtomicBool, Ordering};
 
@@ -53,5 +55,18 @@ unsafe impl<T> Send for Mutex<T> {}
 impl<'a, T: 'a> Drop for MutexGuard<'a, T> {
     fn drop(&mut self) {
         self.mutex.locked.store(false, Ordering::Release);
+    }
+}
+
+impl<'a, T: 'a> Deref for MutexGuard<'a, T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*self.mutex.data.get() }
+    }
+}
+
+impl<'a, T: 'a> DerefMut for MutexGuard<'a, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { &mut *self.mutex.data.get() }
     }
 }
