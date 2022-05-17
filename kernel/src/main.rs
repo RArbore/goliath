@@ -13,19 +13,19 @@
  */
 
 #![no_std]
+#![no_main]
 
-//use core::arch::asm;
-//use riscv::register::*;
 use core::panic::PanicInfo;
 
 pub mod drivers;
-pub use drivers::*;
+pub mod mutex;
+pub mod start;
 
 #[no_mangle]
-unsafe extern "C" fn kinit() {
+pub unsafe extern "C" fn kinit() {
     loop {
-        if let Some(byte) = ns16550a::uart_get_byte() {
-            ns16550a::uart_put_byte(byte);
+        if let Some(byte) = drivers::ns16550a::uart_get_byte() {
+            drivers::ns16550a::uart_put_byte(byte);
         }
     }
     /*

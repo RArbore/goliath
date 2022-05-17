@@ -12,33 +12,30 @@
  * along with goliath. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::mutex::*;
+use core::arch::asm;
 
 extern "C" {
-    static __uart_base_addr: usize;
+    static __bss_start: usize;
+    static __bss_end: usize;
 }
 
-unsafe fn get_uart_base_addr() -> *mut u8 {
-    &__uart_base_addr as *const usize as *mut u8
-}
+#[no_mangle]
+pub unsafe extern "C" fn _start() {
+    let mut bss_ptr = &__bss_start as *const usize as *mut usize;
+    let end_bss_ptr = &__bss_end as *const usize as *mut usize;
 
-pub fn uart_get_byte() -> Option<u8> {
-    unsafe {
-        if get_uart_base_addr().add(5).read_volatile() & 1 != 0 {
-            Some(get_uart_base_addr().read_volatile())
-        } else {
-            None
-        }
+    while bss_ptr < end_bss_ptr {
+        *bss_ptr = 0;
+        bss_ptr = bss_ptr.add(1);
     }
-}
 
-pub fn uart_put_byte(byte: u8) {
-    loop {
-        if unsafe { get_uart_base_addr().add(5).read_volatile() } & (1 << 5) != 0 {
-            break;
-        }
-    }
-    unsafe {
-        get_uart_base_addr().write_volatile(byte);
-    }
+    asm!(
+        "la sp, __kernel_stack_start",
+        "li a0, 0x10000",
+        "csrr a1, mhartid",
+        "addi a1, a1, 1",
+        "mul a0, a0, a1",
+        "add sp, sp, a0",
+    );
+    crate::kinit();
 }

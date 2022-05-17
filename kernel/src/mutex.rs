@@ -11,34 +11,3 @@
  * You should have received a copy of the GNU General Public License
  * along with goliath. If not, see <https://www.gnu.org/licenses/>.
  */
-
-use crate::mutex::*;
-
-extern "C" {
-    static __uart_base_addr: usize;
-}
-
-unsafe fn get_uart_base_addr() -> *mut u8 {
-    &__uart_base_addr as *const usize as *mut u8
-}
-
-pub fn uart_get_byte() -> Option<u8> {
-    unsafe {
-        if get_uart_base_addr().add(5).read_volatile() & 1 != 0 {
-            Some(get_uart_base_addr().read_volatile())
-        } else {
-            None
-        }
-    }
-}
-
-pub fn uart_put_byte(byte: u8) {
-    loop {
-        if unsafe { get_uart_base_addr().add(5).read_volatile() } & (1 << 5) != 0 {
-            break;
-        }
-    }
-    unsafe {
-        get_uart_base_addr().write_volatile(byte);
-    }
-}
