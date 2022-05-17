@@ -19,7 +19,6 @@ use core::panic::PanicInfo;
 
 pub mod drivers;
 pub mod mutex;
-pub mod start;
 
 #[no_mangle]
 pub unsafe extern "C" fn kinit() {
