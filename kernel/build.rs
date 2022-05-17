@@ -26,21 +26,39 @@ fn main() {
             "-fvisibility=hidden",
             "-nostartfiles",
             "-nostdlib",
+            "-mno-relax",
             "-c",
-            "-Tld/qemu.ld",
+            "-T../ld/qemu.ld",
             "src/asm/boot.S",
             "-o",
             format!("{}/boot.o", out_dir).as_str(),
         ])
         .status()
         .unwrap();
+    Command::new("riscv64-elf-gcc")
+        .args(&[
+            "-march=rv64gc",
+            "-static",
+            "-fvisibility=hidden",
+            "-nostartfiles",
+            "-nostdlib",
+            "-mno-relax",
+            "-c",
+            "-T../ld/qemu.ld",
+            "src/asm/vec.S",
+            "-o",
+            format!("{}/vec.o", out_dir).as_str(),
+        ])
+        .status()
+        .unwrap();
     Command::new("ar")
-        .args(&["crs", "libboot.a", "boot.o"])
+        .args(&["crs", "libasm.a", "boot.o", "vec.o"])
         .current_dir(&Path::new(&out_dir))
         .status()
         .unwrap();
 
     println!("cargo:rustc-link-search=native={}", out_dir);
-    println!("cargo:rustc-link-lib=static=boot");
+    println!("cargo:rustc-link-lib=static=asm");
     println!("cargo:rerun-if-changed=src/asm/boot.S");
+    println!("cargo:rerun-if-changed=src/asm/vec.S");
 }

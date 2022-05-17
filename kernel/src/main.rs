@@ -15,43 +15,48 @@
 #![no_std]
 #![no_main]
 
+use core::arch::asm;
 use core::panic::PanicInfo;
+use riscv::register::*;
 
+pub mod common;
 pub mod drivers;
 pub mod spinlock;
 
-use crate::spinlock::*;
-
 #[no_mangle]
 pub unsafe extern "C" fn kinit() {
-    loop {
-        let uart = drivers::ns16550a::UART_DRIVER_HANDLE.lock();
-        if let Some(byte) = uart.uart_get_byte() {
-            uart.uart_put_byte(byte);
-        }
-    }
-    /*
     mstatus::set_mpp(mstatus::MPP::Supervisor);
-
     mepc::write(kmain as usize);
-
-    asm!("csrw satp, zero");
+    satp::write(0);
 
     asm!("li t0, 0xffff");
     asm!("csrw medeleg, t0");
     asm!("li t0, 0xffff");
     asm!("csrw mideleg, t0");
 
-    asm!("csrr a1, mhartid");
-    asm!("mv tp, a1");
+    sie::set_sext();
+    sie::set_ssoft();
+    sie::set_stimer();
+
+    pmpaddr0::write(0x3fffffffffffff);
+    pmpcfg0::write(0xf);
+
+    drivers::clint::timer_init();
+
+    let id = mhartid::read();
+    asm!("mv tp, {0}", in(reg) id);
 
     asm!("mret");
-    */
 }
 
 #[no_mangle]
 extern "C" fn kmain() -> ! {
-    loop {}
+    loop {
+        let uart = drivers::ns16550a::UART_DRIVER_HANDLE.lock();
+        if let Some(byte) = uart.uart_get_byte() {
+            uart.uart_put_byte(byte);
+        }
+    }
 }
 
 #[panic_handler]

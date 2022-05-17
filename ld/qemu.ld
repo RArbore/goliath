@@ -69,4 +69,5 @@ SECTIONS
   PROVIDE(__heap_size = __memory_end - __kernel_stack_end);
 
   PROVIDE(__uart_base_addr = 0x10000000);
+  PROVIDE(__clint_addr = 0x02000000);
 }

@@ -12,5 +12,4 @@
  * along with goliath. If not, see <https://www.gnu.org/licenses/>.
  */
 
-pub mod clint;
-pub mod ns16550a;
+pub const MAX_CPUS: usize = 16;
