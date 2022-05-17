@@ -20,13 +20,23 @@ use core::panic::PanicInfo;
 pub mod drivers;
 pub mod mutex;
 
+use crate::mutex::*;
+
+static MUTEX: Mutex<()> = Mutex::new(());
+
 #[no_mangle]
 pub unsafe extern "C" fn kinit() {
+    MUTEX.lock();
+    drivers::ns16550a::uart_put_byte(b'A');
+    drivers::ns16550a::uart_put_byte(b'B');
+    /*
     loop {
+        MUTEX.lock();
         if let Some(byte) = drivers::ns16550a::uart_get_byte() {
             drivers::ns16550a::uart_put_byte(byte);
         }
     }
+    */
     /*
     mstatus::set_mpp(mstatus::MPP::Supervisor);
 
