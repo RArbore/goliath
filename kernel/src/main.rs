@@ -23,11 +23,17 @@ pub mod common;
 pub mod drivers;
 pub mod spinlock;
 
+extern "C" {
+    static kernelvec: usize;
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn kinit() {
     mstatus::set_mpp(mstatus::MPP::Supervisor);
     mepc::write(kmain as usize);
     satp::write(0);
+
+    asm!("csrw mie, zero");
 
     asm!("li t0, 0xffff");
     asm!("csrw medeleg, t0");
@@ -45,6 +51,8 @@ pub unsafe extern "C" fn kinit() {
 
     let id = mhartid::read();
     asm!("mv tp, {0}", in(reg) id);
+
+    stvec::write(kernelvec, stvec::TrapMode::Direct);
 
     asm!("mret");
 }

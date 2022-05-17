@@ -28,7 +28,7 @@ static mut TIMER_SCRATCH: [[u64; 8]; crate::common::MAX_CPUS] = [[0; 8]; crate::
 pub unsafe fn timer_init() {
     let id = mhartid::read();
 
-    let interval_cycles = 1000u64;
+    let interval_cycles = 20000u64;
     let mtimecmp = get_clint_addr().add(0x4000 + 8 * id) as *mut u64;
     let mtime = get_clint_addr().add(0xBFF8) as *const u64;
     mtimecmp.write_volatile(mtime.read_volatile() + interval_cycles);
@@ -42,6 +42,4 @@ pub unsafe fn timer_init() {
     mtvec::write(timervec, mtvec::TrapMode::Direct);
 
     mstatus::set_mie();
-
-    mie::set_mtimer();
 }
