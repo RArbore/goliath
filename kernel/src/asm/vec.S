@@ -12,6 +12,8 @@
 # along with goliath. If not, see <https://www.gnu.org/licenses/>.
 # 
 
+    .option norvc
+
     .global kernelvec
     .align 4
 kernelvec:
@@ -49,7 +51,7 @@ kernelvec:
     sd t5, 232(sp)
     sd t6, 240(sp)
     
-    
+    call m_trap
     
     ld ra, 0(sp)
     ld sp, 8(sp)
@@ -86,29 +88,3 @@ kernelvec:
     addi sp, sp, 256
     
     sret 
-    
-    .global timervec
-    .align 4
-timervec:   	
-    j timervec
-    csrrw a0, mscratch, a0
-    sd a1, 0(a0)
-    sd a2, 8(a0)
-    sd a3, 16(a0)
-
-    ld a1, 32(a0)
-    ld a2, 40(a0)
-    ld a3, 0(a1)
-    add a3, a3, a2
-    sd a3, 0(a1)
-
-    li a1, 2
-    csrw sip, a1
-
-    sd a1, 0(a0)
-    sd a2, 8(a0)
-    sd a3, 16(a0)
-    csrrw a0, mscratch, a0
-    mret
-
-    .end

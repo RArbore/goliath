@@ -20,8 +20,10 @@ use core::panic::PanicInfo;
 use riscv::register::*;
 
 pub mod common;
+pub mod cpu;
 pub mod drivers;
 pub mod spinlock;
+pub mod trap;
 
 extern "C" {
     static kernelvec: usize;
@@ -31,28 +33,27 @@ extern "C" {
 pub unsafe extern "C" fn kinit() {
     mstatus::set_mpp(mstatus::MPP::Supervisor);
     mepc::write(kmain as usize);
-    satp::write(0);
-
-    asm!("csrw mie, zero");
 
     asm!("li t0, 0xffff");
     asm!("csrw medeleg, t0");
     asm!("li t0, 0xffff");
     asm!("csrw mideleg, t0");
 
-    sie::set_sext();
-    sie::set_ssoft();
-    sie::set_stimer();
-
     pmpaddr0::write(0x3fffffffffffff);
     pmpcfg0::write(0xf);
-
-    drivers::clint::timer_init();
 
     let id = mhartid::read();
     asm!("mv tp, {0}", in(reg) id);
 
-    stvec::write(kernelvec, stvec::TrapMode::Direct);
+    mtvec::write(kernelvec, stvec::TrapMode::Direct);
+
+    mie::set_sext();
+    mie::set_ssoft();
+    mie::set_stimer();
+
+    drivers::clint::clint_set_future(1_000);
+
+    mstatus::set_mie();
 
     asm!("mret");
 }

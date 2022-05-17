@@ -12,18 +12,8 @@
  * along with goliath. If not, see <https://www.gnu.org/licenses/>.
  */
 
-extern "C" {
-    static __clint_addr: usize;
-}
-
-unsafe fn get_clint_addr() -> *mut u8 {
-    &__clint_addr as *const usize as _
-}
-
-pub fn clint_set_future(cycles: u64) {
-    unsafe {
-        let mtimecmp = get_clint_addr().add(0x4000 + 8 * crate::cpu::hart_id()) as *mut u64;
-        let mtime = get_clint_addr().add(0xbff8) as *const u64;
-        mtimecmp.write_volatile(mtime.read_volatile() + cycles);
-    }
+#[no_mangle]
+pub extern "C" fn m_trap() {
+    unsafe { (0x1000_0000 as *mut u8).write_volatile(b'A') };
+    crate::drivers::clint::clint_set_future(1_000);
 }

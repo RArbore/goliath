@@ -27,7 +27,7 @@ unsafe fn get_uart_base_addr() -> *mut u8 {
 }
 
 impl UART {
-    pub const fn new() -> UART {
+    const fn new() -> UART {
         UART {}
     }
 

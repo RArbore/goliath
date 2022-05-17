@@ -12,18 +12,12 @@
  * along with goliath. If not, see <https://www.gnu.org/licenses/>.
  */
 
-extern "C" {
-    static __clint_addr: usize;
-}
+use core::arch::asm;
 
-unsafe fn get_clint_addr() -> *mut u8 {
-    &__clint_addr as *const usize as _
-}
-
-pub fn clint_set_future(cycles: u64) {
+pub fn hart_id() -> usize {
+    let mut hart_id: usize;
     unsafe {
-        let mtimecmp = get_clint_addr().add(0x4000 + 8 * crate::cpu::hart_id()) as *mut u64;
-        let mtime = get_clint_addr().add(0xbff8) as *const u64;
-        mtimecmp.write_volatile(mtime.read_volatile() + cycles);
+        asm!("mv {}, tp", out(reg) hart_id);
     }
+    hart_id
 }

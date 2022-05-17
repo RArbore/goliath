@@ -12,27 +12,38 @@
 # along with goliath. If not, see <https://www.gnu.org/licenses/>.
 # 
 
+    .option norvc
+
     .align 4
     .section .text.init
     .global _start
-    .global __kernel_stack_start
     .global kinit
 _start:
+    .option push
+    .option norelax
+    la gp, __global_pointer
+    .option pop
+
+    csrw satp, zero
+
     la a0, __bss_start
     la a1, __bss_end
-    bgeu a0, a1, 2f
-1:
+    bgeu a0, a1, bss_loop_end
+bss_loop:
     sd zero, 0(a0)
     addi a0, a0, 8
-    bltu a0, a1, 1b
-2:
-    la gp, __global_pointer
-    la sp, __kernel_stack_start
+    bltu a0, a1, bss_loop
+bss_loop_end:
+
+    la sp, __kernel_stack_end
     li a0, 0x10000
     csrr a1, mhartid
     addi a1, a1, 1
     mul a0, a0, a1
     add sp, sp, a0
+
+    csrw mie, zero
+    
     call kinit
 
     .end
