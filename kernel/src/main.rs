@@ -18,11 +18,9 @@
 use core::panic::PanicInfo;
 
 pub mod drivers;
-pub mod mutex;
+pub mod spinlock;
 
-use crate::mutex::*;
-
-static MUTEX: Mutex<()> = Mutex::new(());
+use crate::spinlock::*;
 
 #[no_mangle]
 pub unsafe extern "C" fn kinit() {

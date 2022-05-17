@@ -12,7 +12,7 @@
  * along with goliath. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::mutex::*;
+use crate::spinlock::*;
 
 extern "C" {
     static __uart_base_addr: usize;
@@ -20,7 +20,7 @@ extern "C" {
 
 pub struct UART {}
 
-pub static UART_DRIVER_HANDLE: Mutex<UART> = Mutex::new(UART::new());
+pub static UART_DRIVER_HANDLE: Spinlock<UART> = Spinlock::new(UART::new());
 
 unsafe fn get_uart_base_addr() -> *mut u8 {
     &__uart_base_addr as *const usize as *mut u8

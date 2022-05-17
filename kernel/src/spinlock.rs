@@ -18,55 +18,55 @@ use core::ops::DerefMut;
 use core::ops::Drop;
 use core::sync::atomic::{AtomicBool, Ordering};
 
-pub struct Mutex<T> {
+pub struct Spinlock<T> {
     locked: AtomicBool,
     data: UnsafeCell<T>,
 }
 
-pub struct MutexGuard<'a, T: 'a> {
-    mutex: &'a Mutex<T>,
+pub struct SpinlockGuard<'a, T: 'a> {
+    spinlock: &'a Spinlock<T>,
 }
 
-impl<T> Mutex<T> {
-    pub const fn new(value: T) -> Mutex<T> {
-        Mutex {
+impl<T> Spinlock<T> {
+    pub const fn new(value: T) -> Spinlock<T> {
+        Spinlock {
             locked: AtomicBool::new(false),
             data: UnsafeCell::new(value),
         }
     }
 
-    pub fn lock(&self) -> MutexGuard<'_, T> {
+    pub fn lock(&self) -> SpinlockGuard<'_, T> {
         loop {
             if !self
                 .locked
                 .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
                 .is_err()
             {
-                break MutexGuard { mutex: self };
+                break SpinlockGuard { spinlock: self };
             }
         }
     }
 }
 
-unsafe impl<T> Sync for Mutex<T> {}
+unsafe impl<T> Sync for Spinlock<T> {}
 
-unsafe impl<T> Send for Mutex<T> {}
+unsafe impl<T> Send for Spinlock<T> {}
 
-impl<'a, T: 'a> Drop for MutexGuard<'a, T> {
+impl<'a, T: 'a> Drop for SpinlockGuard<'a, T> {
     fn drop(&mut self) {
-        self.mutex.locked.store(false, Ordering::Release);
+        self.spinlock.locked.store(false, Ordering::Release);
     }
 }
 
-impl<'a, T: 'a> Deref for MutexGuard<'a, T> {
+impl<'a, T: 'a> Deref for SpinlockGuard<'a, T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
-        unsafe { &*self.mutex.data.get() }
+        unsafe { &*self.spinlock.data.get() }
     }
 }
 
-impl<'a, T: 'a> DerefMut for MutexGuard<'a, T> {
+impl<'a, T: 'a> DerefMut for SpinlockGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe { &mut *self.mutex.data.get() }
+        unsafe { &mut *self.spinlock.data.get() }
     }
 }
