@@ -18,11 +18,14 @@ extern "C" {
     static __uart_base_addr: usize;
 }
 
+static DEVICE_LOCK: Mutex<()> = Mutex::new(());
+
 unsafe fn get_uart_base_addr() -> *mut u8 {
     &__uart_base_addr as *const usize as *mut u8
 }
 
 pub fn uart_get_byte() -> Option<u8> {
+    DEVICE_LOCK.lock();
     unsafe {
         if get_uart_base_addr().add(5).read_volatile() & 1 != 0 {
             Some(get_uart_base_addr().read_volatile())
@@ -33,6 +36,7 @@ pub fn uart_get_byte() -> Option<u8> {
 }
 
 pub fn uart_put_byte(byte: u8) {
+    DEVICE_LOCK.lock();
     loop {
         if unsafe { get_uart_base_addr().add(5).read_volatile() } & (1 << 5) != 0 {
             break;
