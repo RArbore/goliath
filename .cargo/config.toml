@@ -1,3 +1,6 @@
 [build]
 target = "riscv64gc-unknown-none-elf"
-rustflags = ['-Clink-arg=-Tld/qemu.ld']
+rustflags = ["-Clink-arg=-Tld/qemu.ld", "-Clink-arg=-nostdlib"]
+
+[target.riscv64gc-unknown-none-elf]
+runner = "qemu-system-riscv64 -machine virt -cpu rv64 -smp 4 -m 128M -gdb tcp::1234 -bios none -nographic -kernel "
