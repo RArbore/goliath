@@ -23,9 +23,10 @@ pub use drivers::*;
 
 #[no_mangle]
 unsafe extern "C" fn kinit() {
-    let hello_world: &[u8] = b"Hello, World!";
-    for &byte in hello_world {
-        ns16550a::uart_put_char(byte);
+    loop {
+        if let Some(byte) = ns16550a::uart_get_byte() {
+            ns16550a::uart_put_byte(byte);
+        }
     }
     /*
     mstatus::set_mpp(mstatus::MPP::Supervisor);
@@ -44,7 +45,6 @@ unsafe extern "C" fn kinit() {
 
     asm!("mret");
     */
-    loop {}
 }
 
 #[no_mangle]
