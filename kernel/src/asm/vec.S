@@ -17,74 +17,89 @@
     .global m_trap_vec
     .align 4
 m_trap_vec:
-    addi sp, sp, -256
+    csrrw t6, mscratch, t6
 
-    sd ra, 0(sp)
-    sd sp, 8(sp)
-    sd gp, 16(sp)
-    sd tp, 24(sp)
-    sd t0, 32(sp)
-    sd t1, 40(sp)
-    sd t2, 48(sp)
-    sd s0, 56(sp)
-    sd s1, 64(sp)
-    sd a0, 72(sp)
-    sd a1, 80(sp)
-    sd a2, 88(sp)
-    sd a3, 96(sp)
-    sd a4, 104(sp)
-    sd a5, 112(sp)
-    sd a6, 120(sp)
-    sd a7, 128(sp)
-    sd s2, 136(sp)
-    sd s3, 144(sp)
-    sd s4, 152(sp)
-    sd s5, 160(sp)
-    sd s6, 168(sp)
-    sd s7, 176(sp)
-    sd s8, 184(sp)
-    sd s9, 192(sp)
-    sd s10, 200(sp)
-    sd s11, 208(sp)
-    sd t3, 216(sp)
-    sd t4, 224(sp)
-    sd t5, 232(sp)
-    sd t6, 240(sp)
+    sd x0, 0(t6)
+    sd x1, 8(t6)
+    sd x2, 16(t6)
+    sd x3, 24(t6)
+    sd x4, 32(t6)
+    sd x5, 40(t6)
+    sd x6, 48(t6)
+    sd x7, 56(t6)
+    sd x8, 64(t6)
+    sd x9, 72(t6)
+    sd x10, 80(t6)
+    sd x11, 88(t6)
+    sd x12, 96(t6)
+    sd x13, 104(t6)
+    sd x14, 112(t6)
+    sd x15, 120(t6)
+    sd x16, 128(t6)
+    sd x17, 136(t6)
+    sd x18, 144(t6)
+    sd x19, 152(t6)
+    sd x20, 160(t6)
+    sd x21, 168(t6)
+    sd x22, 176(t6)
+    sd x23, 184(t6)
+    sd x24, 192(t6)
+    sd x25, 200(t6)
+    sd x26, 208(t6)
+    sd x27, 216(t6)
+    sd x28, 224(t6)
+    sd x29, 232(t6)
+    sd x30, 240(t6)
+
+    mv t5, t6
+    csrr t6, mscratch
+    sd x31, 248(t5)
+
+    csrw mscratch, t5
+    
+    csrr a0, mepc
+    csrr a1, mtval
+    csrr a2, mcause
+    csrr a3, mhartid
+    csrr a4, mstatus
+    mv a5, t5
     
     call m_trap
+
+    csrw mepc, a0
+    csrr t6, mscratch
+
+    ld x0, 0(t6)
+    ld x1, 8(t6)
+    ld x2, 16(t6)
+    ld x3, 24(t6)
+    ld x4, 32(t6)
+    ld x5, 40(t6)
+    ld x6, 48(t6)
+    ld x7, 56(t6)
+    ld x8, 64(t6)
+    ld x9, 72(t6)
+    ld x10, 80(t6)
+    ld x11, 88(t6)
+    ld x12, 96(t6)
+    ld x13, 104(t6)
+    ld x14, 112(t6)
+    ld x15, 120(t6)
+    ld x16, 128(t6)
+    ld x17, 136(t6)
+    ld x18, 144(t6)
+    ld x19, 152(t6)
+    ld x20, 160(t6)
+    ld x21, 168(t6)
+    ld x22, 176(t6)
+    ld x23, 184(t6)
+    ld x24, 192(t6)
+    ld x25, 200(t6)
+    ld x26, 208(t6)
+    ld x27, 216(t6)
+    ld x28, 224(t6)
+    ld x29, 232(t6)
+    ld x30, 240(t6)
+    ld x31, 248(t6)
     
-    ld ra, 0(sp)
-    ld sp, 8(sp)
-    ld gp, 16(sp)
-    
-    ld t0, 32(sp)
-    ld t1, 40(sp)
-    ld t2, 48(sp)
-    ld s0, 56(sp)
-    ld s1, 64(sp)
-    ld a0, 72(sp)
-    ld a1, 80(sp)
-    ld a2, 88(sp)
-    ld a3, 96(sp)
-    ld a4, 104(sp)
-    ld a5, 112(sp)
-    ld a6, 120(sp)
-    ld a7, 128(sp)
-    ld s2, 136(sp)
-    ld s3, 144(sp)
-    ld s4, 152(sp)
-    ld s5, 160(sp)
-    ld s6, 168(sp)
-    ld s7, 176(sp)
-    ld s8, 184(sp)
-    ld s9, 192(sp)
-    ld s10, 200(sp)
-    ld s11, 208(sp)
-    ld t3, 216(sp)
-    ld t4, 224(sp)
-    ld t5, 232(sp)
-    ld t6, 240(sp)
-    
-    addi sp, sp, 256
-    
-    sret 
+    mret 

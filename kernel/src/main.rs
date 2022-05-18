@@ -26,15 +26,19 @@ pub mod trap;
 
 #[no_mangle]
 pub unsafe extern "C" fn kinit() {
-    satp::write(0);
     pmpaddr0::write(0x3fffffffffffff);
     pmpcfg0::write(0xf);
+
+    let satp = cpu::build_satp(cpu::SATPMode::Off, 0);
+    cpu::mscratch_write(&mut cpu::KERNEL_TRAP_FRAME[0] as *mut cpu::TrapFrame as usize);
+    cpu::sscratch_write(&mut cpu::KERNEL_TRAP_FRAME[0] as *mut cpu::TrapFrame as usize);
+    cpu::KERNEL_TRAP_FRAME[0].satp = satp;
 }
 
 #[no_mangle]
 extern "C" fn kmain() -> ! {
     unsafe { (0x1000_0000 as *mut u8).write_volatile(b'C') };
-    drivers::clint::clint_set_future(10_000_000);
+    drivers::clint::clint_set_future(1000);
     loop {
         let uart = drivers::ns16550a::UART_DRIVER_HANDLE.lock();
         if let Some(byte) = uart.uart_get_byte() {
