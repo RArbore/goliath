@@ -38,7 +38,7 @@ pub unsafe extern "C" fn kinit() {
 #[no_mangle]
 extern "C" fn kmain() -> ! {
     unsafe { (0x1000_0000 as *mut u8).write_volatile(b'C') };
-    drivers::clint::clint_set_future(1000);
+    drivers::clint::clint_set_future(10_000_000);
     loop {
         let uart = drivers::ns16550a::UART_DRIVER_HANDLE.lock();
         if let Some(byte) = uart.uart_get_byte() {
