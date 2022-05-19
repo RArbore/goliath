@@ -18,6 +18,7 @@
     .section .text.init
     .global _start
     .global kinit
+    .global kinit_hart
 _start:
     .option push
     .option norelax
@@ -25,6 +26,14 @@ _start:
     .option pop
 
     csrw satp, zero
+
+    la sp, __kernel_stack_end
+    li t0, 0x10000
+    csrr a0, mhartid
+    mul	t0, t0, a0
+    sub	sp, sp, t0
+
+    bnez a0, park_hart
 
     la a0, __bss_start
     la a1, __bss_end
@@ -34,8 +43,6 @@ bss_loop:
     addi a0, a0, 8
     bltu a0, a1, bss_loop
 bss_loop_end:
-
-    la sp, __kernel_stack_end
 
     li t0, 0b11 << 11
     csrw mstatus, t0
@@ -63,4 +70,24 @@ after_kinit:
 
     mret
 
+park_hart:
+    li t0, 0b11 << 11 | (1 << 7)
+    csrw mstatus, t0
+
+    li t1, (1 << 3)
+    csrw mie, t1
+
+    la t2, kinit_hart
+    csrw mepc, t2
+
+    la t3, m_trap_vec
+    csrw mtvec, t3
+
+    la ra, after_kinit_hart
+    mret
+
+after_kinit_hart:   
+    wfi
+    j after_kinit_hart
+    
     .end

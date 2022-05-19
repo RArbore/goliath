@@ -33,6 +33,16 @@ pub unsafe extern "C" fn kinit() {
     cpu::mscratch_write(&mut cpu::KERNEL_TRAP_FRAME[0] as *mut cpu::TrapFrame as usize);
     cpu::sscratch_write(&mut cpu::KERNEL_TRAP_FRAME[0] as *mut cpu::TrapFrame as usize);
     cpu::KERNEL_TRAP_FRAME[0].satp = satp;
+    cpu::KERNEL_TRAP_FRAME[0].hartid = 0;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn kinit_hart(hartid: usize) {
+    let satp = cpu::build_satp(cpu::SATPMode::Off, 0);
+    cpu::mscratch_write(&mut cpu::KERNEL_TRAP_FRAME[hartid] as *mut cpu::TrapFrame as usize);
+    cpu::sscratch_write(&mut cpu::KERNEL_TRAP_FRAME[hartid] as *mut cpu::TrapFrame as usize);
+    cpu::KERNEL_TRAP_FRAME[0].satp = satp;
+    cpu::KERNEL_TRAP_FRAME[hartid].hartid = hartid;
 }
 
 #[no_mangle]

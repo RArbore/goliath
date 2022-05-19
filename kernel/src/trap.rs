@@ -21,8 +21,6 @@ pub extern "C" fn m_trap(
     status: usize,
     frame: &mut crate::cpu::TrapFrame,
 ) -> usize {
-    //unsafe { (0x1000_0000 as *mut u8).write_volatile(b'A') };
-    //crate::drivers::clint::clint_set_future(10_000_000);
     let is_async = cause >> 63 & 1 == 1;
     let cause_num = cause & 0xfff;
     let mut return_pc = epc;
