@@ -29,7 +29,9 @@ pub extern "C" fn m_trap(
         match cause_num {
             7 => {
                 crate::drivers::clint::clint_set_future(10_000_000);
-                unsafe { (0x1000_0000 as *mut u8).write_volatile(b'A') };
+                unsafe {
+                    (0x1000_0000 as *mut u8).write_volatile(b'0' + crate::cpu::hart_id() as u8)
+                };
             }
             _ => {}
         }

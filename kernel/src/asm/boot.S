@@ -46,10 +46,24 @@ bss_loop_end:
 
     li t0, 0b11 << 11
     csrw mstatus, t0
-    csrw mie, zero
+
     la t0, kinit
     csrw mepc, t0
+
+    csrw mie, zero
     
+    la ra, after_kinit
+    mret
+
+park_hart:
+    li t0, 0b11 << 11
+    csrw mstatus, t0
+
+    la t1, kinit_hart
+    csrw mepc, t1
+
+    csrw mie, zero
+
     la ra, after_kinit
     mret
 
@@ -69,25 +83,3 @@ after_kinit:
     csrr tp, mhartid
 
     mret
-
-park_hart:
-    li t0, 0b11 << 11 | (1 << 7)
-    csrw mstatus, t0
-
-    li t1, (1 << 3)
-    csrw mie, t1
-
-    la t2, kinit_hart
-    csrw mepc, t2
-
-    la t3, m_trap_vec
-    csrw mtvec, t3
-
-    la ra, after_kinit_hart
-    mret
-
-after_kinit_hart:   
-    wfi
-    j after_kinit_hart
-    
-    .end
