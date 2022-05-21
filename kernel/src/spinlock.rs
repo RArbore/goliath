@@ -37,10 +37,10 @@ impl<T> Spinlock<T> {
 
     pub fn lock(&self) -> SpinlockGuard<'_, T> {
         loop {
-            if !self
+            if self
                 .locked
                 .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
-                .is_err()
+                .is_ok()
             {
                 break SpinlockGuard { spinlock: self };
             }

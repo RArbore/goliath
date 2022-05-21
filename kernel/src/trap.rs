@@ -15,15 +15,15 @@
 #[no_mangle]
 pub extern "C" fn m_trap(
     epc: usize,
-    tval: usize,
+    _tval: usize,
     cause: usize,
-    hart: usize,
-    status: usize,
-    frame: &mut crate::cpu::TrapFrame,
+    _hart: usize,
+    _status: usize,
+    _frame: &mut crate::cpu::TrapFrame,
 ) -> usize {
     let is_async = cause >> 63 & 1 == 1;
     let cause_num = cause & 0xfff;
-    let mut return_pc = epc;
+    let return_pc = epc;
 
     if is_async {
         match cause_num {

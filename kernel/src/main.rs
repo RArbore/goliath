@@ -46,9 +46,9 @@ pub unsafe extern "C" fn kinit_hart(hartid: usize) {
     pmpcfg0::write(0xf);
 
     loop {
-        if !KINIT_FINISHED
+        if KINIT_FINISHED
             .compare_exchange(true, true, Ordering::Acquire, Ordering::Relaxed)
-            .is_err()
+            .is_ok()
         {
             break;
         }
