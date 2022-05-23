@@ -46,6 +46,10 @@ impl<T> Spinlock<T> {
             }
         }
     }
+
+    pub unsafe fn force<'a>(&'a self) -> &'a T {
+        &*self.data.get()
+    }
 }
 
 unsafe impl<T> Sync for Spinlock<T> {}
