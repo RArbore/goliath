@@ -20,7 +20,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 
 pub struct Spinlock<T> {
     locked: AtomicBool,
-    data: UnsafeCell<T>,
+    data: UnsafeCell<(T, usize)>,
 }
 
 pub struct SpinlockGuard<'a, T: 'a> {
@@ -31,7 +31,7 @@ impl<T> Spinlock<T> {
     pub const fn new(value: T) -> Spinlock<T> {
         Spinlock {
             locked: AtomicBool::new(false),
-            data: UnsafeCell::new(value),
+            data: UnsafeCell::new((value, 0)),
         }
     }
 
@@ -42,13 +42,18 @@ impl<T> Spinlock<T> {
                 .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
                 .is_ok()
             {
+                unsafe { (*self.data.get()).1 = crate::cpu::hart_id() };
                 break SpinlockGuard { spinlock: self };
             }
         }
     }
 
     pub unsafe fn force<'a>(&'a self) -> &'a T {
-        &*self.data.get()
+        &(*self.data.get()).0
+    }
+
+    pub unsafe fn peek_hart(&self) -> usize {
+        (*self.data.get()).1
     }
 }
 
@@ -65,12 +70,12 @@ impl<'a, T: 'a> Drop for SpinlockGuard<'a, T> {
 impl<'a, T: 'a> Deref for SpinlockGuard<'a, T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
-        unsafe { &*self.spinlock.data.get() }
+        unsafe { &(*self.spinlock.data.get()).0 }
     }
 }
 
 impl<'a, T: 'a> DerefMut for SpinlockGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe { &mut *self.spinlock.data.get() }
+        unsafe { &mut (*self.spinlock.data.get()).0 }
     }
 }

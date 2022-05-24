@@ -30,9 +30,16 @@ pub extern "C" fn m_trap(
             7 => {
                 crate::drivers::clint::clint_set_future(10_000_000);
                 unsafe {
-                    crate::drivers::ns16550a::UART_DRIVER_HANDLE
-                        .force()
-                        .uart_put_byte(b'0' + crate::cpu::hart_id() as u8);
+                    let hart = crate::drivers::ns16550a::UART_DRIVER_HANDLE.peek_hart();
+                    if hart == crate::cpu::hart_id() {
+                        crate::drivers::ns16550a::UART_DRIVER_HANDLE
+                            .force()
+                            .uart_put_byte(b'0' + crate::cpu::hart_id() as u8);
+                    } else {
+                        crate::drivers::ns16550a::UART_DRIVER_HANDLE
+                            .lock()
+                            .uart_put_byte(b'0' + crate::cpu::hart_id() as u8);
+                    }
                 };
             }
             _ => {}
