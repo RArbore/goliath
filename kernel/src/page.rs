@@ -12,6 +12,26 @@
  * along with goliath. If not, see <https://www.gnu.org/licenses/>.
  */
 
-pub const MAX_CPUS: usize = 16;
+extern "C" {
+    static __heap_start: usize;
+    static __heap_size: usize;
+}
 
-pub const PAGE_SIZE: usize = 4096;
+unsafe fn get_heap_start() -> *mut u8 {
+    &__heap_start as *const usize as _
+}
+
+unsafe fn get_heap_size() -> usize {
+    &__heap_size as *const usize as _
+}
+
+#[repr(u8)]
+pub enum PageBits {
+    Empty = 0,
+    Taken = 1 << 0,
+    Last = 1 << 1,
+}
+
+pub struct Page {
+    flags: u8,
+}

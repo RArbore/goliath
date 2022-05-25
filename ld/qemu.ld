@@ -66,7 +66,7 @@ SECTIONS
   PROVIDE(__kernel_stack_end = __kernel_stack_start + 0x80000);
   PROVIDE(__memory_end = ORIGIN(ram) + LENGTH(ram));
   PROVIDE(__heap_start = __kernel_stack_end);
-  PROVIDE(__heap_size = __memory_end - __kernel_stack_end);
+  PROVIDE(__heap_size = __memory_end - __heap_start);
 
   PROVIDE(__uart_base_addr = 0x10000000);
   PROVIDE(__clint_addr = 0x02000000);
