@@ -17,6 +17,8 @@ extern "C" {
     static __heap_size: usize;
 }
 
+const NUM_PAGES: usize = __heap_size / PAGE_SIZE;
+
 unsafe fn get_heap_start() -> *mut u8 {
     &__heap_start as *const usize as _
 }
@@ -33,5 +35,35 @@ pub enum PageBits {
 }
 
 pub struct Page {
-    flags: u8,
+    flags: PageBits,
+}
+
+impl Page {
+    pub fn test_bits(&self, bits: PageBits) {
+        self.flags & bits != 0
+    }
+}
+
+pub fn alloc(pages: usize) -> *mut u8 {
+    if pages == 0 {
+        0
+    }
+
+    let ptr = __heap_start as *mut Page;
+    let mut cur_start: usize = 0;
+    let mut found = false;
+    for i in 0..NUM_PAGES - pages {
+        if found && i - cur_start >= pages {
+            ptr.add(cur_start)
+        } else if !(unsafe { *ptr.add(i) }).test_bits(PageBits::Taken) {
+            if !found {
+                cur_start = i;
+            }
+            found = true;
+        } else {
+            found = false;
+        }
+    }
+
+    0
 }
