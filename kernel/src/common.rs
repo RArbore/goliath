@@ -14,4 +14,6 @@
 
 pub const MAX_CPUS: usize = 16;
 
-pub const PAGE_SIZE: usize = 4096;
+pub const PAGE_ORDER: usize = 12;
+
+pub const PAGE_SIZE: usize = 1 << PAGE_ORDER;

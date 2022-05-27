@@ -22,6 +22,7 @@ use riscv::register::*;
 pub mod common;
 pub mod cpu;
 pub mod drivers;
+pub mod page;
 pub mod spinlock;
 pub mod trap;
 
